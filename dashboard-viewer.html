@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dairy Dashboard Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+    }
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-size: 1.2em;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      background: #fafafa;
+    }
+    .controls button {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 100px);
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <header>Dairy Dashboard Viewer</header>
+  <div class="controls">
+    <button onclick="loadDashboard('https://your-basic-dashboard-link')">Basic Dashboard</button>
+    <button onclick="loadDashboard('https://your-advanced-dashboard-link')">Advanced Dashboard</button>
+  </div>
+  <iframe id="dashboardFrame" src="https://your-basic-dashboard-link"></iframe>
+
+  <script>
+    function loadDashboard(url) {
+      document.getElementById('dashboardFrame').src = url;
+    }
+  </script>
+</body>
+</html>
