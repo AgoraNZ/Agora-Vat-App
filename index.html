@@ -19,14 +19,15 @@
       text-align: center;
       font-size: 1.2em;
     }
-    .controls {
+    .login-container, .controls {
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 10px;
-      padding: 10px;
+      padding: 15px;
       background: #fafafa;
     }
-    .controls button {
+    .controls button, .login-container button {
       padding: 10px 15px;
       background-color: #007bff;
       color: white;
@@ -34,24 +35,84 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    .login-container input {
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
     iframe {
       width: 100%;
-      height: calc(100vh - 100px);
+      height: calc(100vh - 150px);
       border: none;
     }
   </style>
 </head>
 <body>
   <header>Dairy Dashboard Viewer</header>
-  <div class="controls">
-    <button onclick="loadDashboard('https://thingsboard.cloud/dashboard/ab92f530-0374-11f0-863b-f730addc68ba?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6')">Basic Dashboard</button>
-    <button onclick="loadDashboard('https://thingsboard.cloud/dashboard/1b2e7c10-d95a-11ef-b1dc-eb5773c78de6?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6')">Advanced Dashboard</button>
+  <div id="loginSection" class="login-container">
+    <input id="farmIdInput" placeholder="Enter Farm ID" />
+    <button onclick="login()">Login</button>
   </div>
-  <iframe id="dashboardFrame" src="https://your-basic-dashboard-link"></iframe>
+  <div id="mainContent" style="display: none;">
+    <div class="controls">
+      <span id="welcomeText"></span>
+      <button onclick="upgradeUser()">Upgrade to Advanced</button>
+    </div>
+    <iframe id="dashboardFrame"></iframe>
+  </div>
 
   <script>
-    function loadDashboard(url) {
+    const userDB = {
+      "44074": {
+        type: "basic",
+        dashboards: {
+          basic: "https://thingsboard.cloud/dashboard/ab92f530-0374-11f0-863b-f730addc68ba?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6",
+          advanced: "https://thingsboard.cloud/dashboard/1b2e7c10-d95a-11ef-b1dc-eb5773c78de6?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6"
+        }
+      },
+      "71230": {
+        type: "advanced",
+        dashboards: {
+          basic: "https://thingsboard.cloud/dashboard/ab92f530-0374-11f0-863b-f730addc68ba?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6",
+          advanced: "https://thingsboard.cloud/dashboard/1b2e7c10-d95a-11ef-b1dc-eb5773c78de6?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6"
+        }
+      }
+    };
+
+    function login() {
+      const farmId = document.getElementById('farmIdInput').value.trim();
+      if (userDB[farmId]) {
+        localStorage.setItem('currentUser', farmId);
+        loadDashboard();
+      } else {
+        alert('Farm ID not recognized.');
+      }
+    }
+
+    function loadDashboard() {
+      const farmId = localStorage.getItem('currentUser');
+      if (!farmId) return;
+      const user = userDB[farmId];
+
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+
+      const url = user.type === 'advanced' ? user.dashboards.advanced : user.dashboards.basic;
       document.getElementById('dashboardFrame').src = url;
+      document.getElementById('welcomeText').textContent = `Logged in as Farm ${farmId} (${user.type})`;
+    }
+
+    function upgradeUser() {
+      const farmId = localStorage.getItem('currentUser');
+      if (!farmId || !userDB[farmId]) return;
+      userDB[farmId].type = 'advanced';
+      loadDashboard();
+    }
+
+    window.onload = function() {
+      if (localStorage.getItem('currentUser')) {
+        loadDashboard();
+      }
     }
   </script>
 </body>
