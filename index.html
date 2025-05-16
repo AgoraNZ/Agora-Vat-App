@@ -13,7 +13,7 @@
       background-color: #f0f0f0;
     }
     header {
-      background-color: #003366;
+      background-color: #001F3F;
       color: white;
       padding: 12px;
       text-align: center;
@@ -26,66 +26,102 @@
       gap: 10px;
       padding: 15px;
       background: #fafafa;
+      flex-wrap: wrap;
     }
     .controls button, .login-container button {
       padding: 10px 15px;
-      background-color: #007bff;
+      background-color: #FF851B;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
     }
-    .login-container input {
+    .login-container select {
       padding: 10px;
       border-radius: 4px;
       border: 1px solid #ccc;
     }
     iframe {
       width: 100%;
-      height: calc(100vh - 150px);
+      height: calc(100vh - 230px);
       border: none;
+    }
+    .info-box {
+      text-align: center;
+      padding: 10px;
+      font-size: 0.95em;
+    }
+    footer {
+      text-align: center;
+      padding: 10px;
+      background: #001F3F;
+      color: white;
+      font-size: 0.8em;
     }
   </style>
 </head>
 <body>
-  <header>Dairy Dashboard Viewer</header>
+  <header>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Agora_logo.svg/512px-Agora_logo.svg.png" alt="Agora Logo" height="30" style="vertical-align: middle; margin-right: 10px;">
+    Dairy Dashboard Viewer
+  </header>
+
   <div id="loginSection" class="login-container">
-    <input id="farmIdInput" placeholder="Enter Farm ID" />
+    <label for="farmSelect">Select Your Farm:</label>
+    <select id="farmSelect">
+      <option value="">-- Choose Farm --</option>
+      <option value="44074">Farm 44074 - Pukerimu</option>
+      <option value="71230">Farm 71230 - Ferryview</option>
+    </select>
     <button onclick="login()">Login</button>
   </div>
+
   <div id="mainContent" style="display: none;">
     <div class="controls">
       <span id="welcomeText"></span>
       <button onclick="upgradeUser()">Upgrade to Advanced</button>
+      <button onclick="logout()" style="background-color: #FF4136;">Logout</button>
+    </div>
+    <div class="info-box">
+      <div><strong>Current Dashboard:</strong> <span id="dashboardType">-</span></div>
+      <div><strong>Next Service:</strong> <span id="nextService">May 25, 2025</span></div>
     </div>
     <iframe id="dashboardFrame"></iframe>
   </div>
 
+  <footer>
+    Agora Dairy Viewer v1.1 — Powered by GitHub Pages
+  </footer>
+
   <script>
     const userDB = {
       "44074": {
+        name: "Pukerimu",
         type: "basic",
         dashboards: {
           basic: "https://thingsboard.cloud/dashboard/ab92f530-0374-11f0-863b-f730addc68ba?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6",
           advanced: "https://thingsboard.cloud/dashboard/1b2e7c10-d95a-11ef-b1dc-eb5773c78de6?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6"
-        }
+        },
+        nextService: "May 25, 2025"
       },
-      "49": {
+      "71230": {
+        name: "Ferryview",
         type: "advanced",
         dashboards: {
           basic: "https://thingsboard.cloud/dashboard/ab92f530-0374-11f0-863b-f730addc68ba?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6",
           advanced: "https://thingsboard.cloud/dashboard/1b2e7c10-d95a-11ef-b1dc-eb5773c78de6?publicId=d0e81cb0-d6fc-11ef-b1dc-eb5773c78de6"
-        }
+        },
+        nextService: "June 10, 2025"
       }
     };
 
     function login() {
-      const farmId = document.getElementById('farmIdInput').value.trim();
+      const farmId = document.getElementById('farmSelect').value;
       if (userDB[farmId]) {
         localStorage.setItem('currentUser', farmId);
         loadDashboard();
       } else {
-        alert('Farm ID not recognized.');
+        alert('Please select a valid farm.');
       }
     }
 
@@ -97,9 +133,13 @@
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('mainContent').style.display = 'block';
 
-      const url = user.type === 'advanced' ? user.dashboards.advanced : user.dashboards.basic;
+      const isAdvanced = user.type === 'advanced';
+      const url = isAdvanced ? user.dashboards.advanced : user.dashboards.basic;
+
       document.getElementById('dashboardFrame').src = url;
-      document.getElementById('welcomeText').textContent = `Logged in as Farm ${farmId} (${user.type})`;
+      document.getElementById('welcomeText').textContent = `Welcome ${user.name} (Farm ${farmId}) — ${user.type.charAt(0).toUpperCase() + user.type.slice(1)} Package`;
+      document.getElementById('dashboardType').textContent = isAdvanced ? 'Advanced' : 'Basic';
+      document.getElementById('nextService').textContent = user.nextService;
     }
 
     function upgradeUser() {
@@ -107,6 +147,11 @@
       if (!farmId || !userDB[farmId]) return;
       userDB[farmId].type = 'advanced';
       loadDashboard();
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      location.reload();
     }
 
     window.onload = function() {
